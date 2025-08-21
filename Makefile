@@ -1,5 +1,5 @@
-PKG_VERSION = v1.10.0
-TALOS_VERSION = v1.10.6
+PKG_VERSION = v1.11.0
+TALOS_VERSION = v1.11.0
 SBCOVERLAY_VERSION = main
 
 REGISTRY ?= ghcr.io
@@ -7,7 +7,7 @@ REGISTRY_USERNAME ?= talos-rpi5
 
 TAG ?= $(shell git describe --tags --exact-match)
 
-EXTENSIONS ?= ghcr.io/siderolabs/gvisor:20250505.0@sha256:d7503b59603f030b972ceb29e5e86979e6c889be1596e87642291fee48ce380c
+EXTENSIONS ?= ghcr.io/siderolabs/gvisor:20250707.0@sha256:c05c303f4923e2481c15cd0c3c231a90c38b93350b333a9ba6238abc1aff4430
 
 PKG_REPOSITORY = https://github.com/siderolabs/pkgs.git
 TALOS_REPOSITORY = https://github.com/siderolabs/talos.git
@@ -57,11 +57,11 @@ checkouts-clean:
 .PHONY: patches-pkgs patches-talos patches
 patches-pkgs:
 	cd "$(CHECKOUTS_DIRECTORY)/pkgs" && \
-		git am "$(PATCHES_DIRECTORY)/siderolabs/pkgs/0001-Patched-for-Raspberry-Pi-5.patch"
+		git apply "$(PATCHES_DIRECTORY)/siderolabs/pkgs/0001-Patched-for-Raspberry-Pi-5.diff"
 
 patches-talos:
 	cd "$(CHECKOUTS_DIRECTORY)/talos" && \
-		git am "$(PATCHES_DIRECTORY)/siderolabs/talos/0001-Patched-for-Raspberry-Pi-5.patch"
+		git apply "$(PATCHES_DIRECTORY)/siderolabs/talos/0001-Patched-for-Raspberry-Pi-5.diff"
 
 patches: patches-pkgs patches-talos
 
