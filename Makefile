@@ -1,5 +1,5 @@
-PKG_VERSION = v1.10.0
-TALOS_VERSION = v1.10.7
+PKG_VERSION = main
+TALOS_VERSION = main
 SBCOVERLAY_VERSION = main
 
 REGISTRY ?= ghcr.io
@@ -14,7 +14,6 @@ TALOS_REPOSITORY = https://github.com/siderolabs/talos.git
 SBCOVERLAY_REPOSITORY = https://github.com/talos-rpi5/sbc-raspberrypi5.git
 
 CHECKOUTS_DIRECTORY := $(PWD)/checkouts
-PATCHES_DIRECTORY := $(PWD)/patches
 
 PKGS_TAG = $(shell cd $(CHECKOUTS_DIRECTORY)/pkgs && git describe --tag --always --dirty --match v[0-9]\*)
 TALOS_TAG = $(shell cd $(CHECKOUTS_DIRECTORY)/talos && git describe --tag --always --dirty --match v[0-9]\*)
@@ -26,7 +25,6 @@ SBCOVERLAY_TAG = $(shell cd $(CHECKOUTS_DIRECTORY)/sbc-raspberrypi5 && git descr
 .PHONY: help
 help:
 	@echo "checkouts : Clone repositories required for the build"
-	@echo "patches   : Apply all patches"
 	@echo "kernel    : Build kernel"
 	@echo "overlay   : Build Raspberry Pi 5 overlay"
 	@echo "installer : Build installer docker image and disk image"
@@ -48,22 +46,6 @@ checkouts-clean:
 	rm -rf "$(CHECKOUTS_DIRECTORY)/pkgs"
 	rm -rf "$(CHECKOUTS_DIRECTORY)/talos"
 	rm -rf "$(CHECKOUTS_DIRECTORY)/sbc-raspberrypi5"
-
-
-
-#
-# Patches
-#
-.PHONY: patches-pkgs patches-talos patches
-patches-pkgs:
-	cd "$(CHECKOUTS_DIRECTORY)/pkgs" && \
-		git am "$(PATCHES_DIRECTORY)/siderolabs/pkgs/0001-Patched-for-Raspberry-Pi-5.patch"
-
-patches-talos:
-	cd "$(CHECKOUTS_DIRECTORY)/talos" && \
-		git am "$(PATCHES_DIRECTORY)/siderolabs/talos/0001-Patched-for-Raspberry-Pi-5.patch"
-
-patches: patches-pkgs patches-talos
 
 
 
