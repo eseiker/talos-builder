@@ -1,5 +1,5 @@
-PKG_VERSION = v1.10.0
-TALOS_VERSION = v1.10.7
+PKG_VERSION = main
+TALOS_VERSION = v1.12.0-alpha.2
 SBCOVERLAY_VERSION = main
 
 REGISTRY ?= ghcr.io
@@ -14,7 +14,6 @@ TALOS_REPOSITORY = https://github.com/siderolabs/talos.git
 SBCOVERLAY_REPOSITORY = https://github.com/talos-rpi5/sbc-raspberrypi5.git
 
 CHECKOUTS_DIRECTORY := $(PWD)/checkouts
-PATCHES_DIRECTORY := $(PWD)/patches
 
 PKGS_TAG = $(shell cd $(CHECKOUTS_DIRECTORY)/pkgs && git describe --tag --always --dirty --match v[0-9]\*)
 TALOS_TAG = $(shell cd $(CHECKOUTS_DIRECTORY)/talos && git describe --tag --always --dirty --match v[0-9]\*)
@@ -26,8 +25,6 @@ SBCOVERLAY_TAG = $(shell cd $(CHECKOUTS_DIRECTORY)/sbc-raspberrypi5 && git descr
 .PHONY: help
 help:
 	@echo "checkouts : Clone repositories required for the build"
-	@echo "patches   : Apply all patches"
-	@echo "kernel    : Build kernel"
 	@echo "overlay   : Build Raspberry Pi 5 overlay"
 	@echo "installer : Build installer docker image and disk image"
 	@echo "release   : Use only when building the final release, this will tag relevant images with the current Git tag."
@@ -52,35 +49,6 @@ checkouts-clean:
 
 
 #
-# Patches
-#
-.PHONY: patches-pkgs patches-talos patches
-patches-pkgs:
-	cd "$(CHECKOUTS_DIRECTORY)/pkgs" && \
-		git am "$(PATCHES_DIRECTORY)/siderolabs/pkgs/0001-Patched-for-Raspberry-Pi-5.patch"
-
-patches-talos:
-	cd "$(CHECKOUTS_DIRECTORY)/talos" && \
-		git am "$(PATCHES_DIRECTORY)/siderolabs/talos/0001-Patched-for-Raspberry-Pi-5.patch"
-
-patches: patches-pkgs patches-talos
-
-
-
-#
-# Kernel
-#
-.PHONY: kernel
-kernel:
-	cd "$(CHECKOUTS_DIRECTORY)/pkgs" && \
-		$(MAKE) \
-			REGISTRY=$(REGISTRY) USERNAME=$(REGISTRY_USERNAME) PUSH=true \
-			PLATFORM=linux/arm64 \
-			kernel
-
-
-
-#
 # Overlay
 #
 .PHONY: overlay
@@ -89,7 +57,7 @@ overlay:
 	cd "$(CHECKOUTS_DIRECTORY)/sbc-raspberrypi5" && \
 		$(MAKE) \
 			REGISTRY=$(REGISTRY) USERNAME=$(REGISTRY_USERNAME) IMAGE_TAG=$(SBCOVERLAY_TAG) PUSH=true \
-			PKGS_PREFIX=$(REGISTRY)/$(REGISTRY_USERNAME) PKGS=$(PKGS_TAG) \
+			PKGS_PREFIX=$(REGISTRY)/siderolabs PKGS=$(PKGS_TAG) \
 			INSTALLER_ARCH=arm64 PLATFORM=linux/arm64 \
 			sbc-raspberrypi5
 
@@ -103,7 +71,7 @@ installer:
 	cd "$(CHECKOUTS_DIRECTORY)/talos" && \
 		$(MAKE) \
 			REGISTRY=$(REGISTRY) USERNAME=$(REGISTRY_USERNAME) PUSH=true \
-			PKG_KERNEL=$(REGISTRY)/$(REGISTRY_USERNAME)/kernel:$(PKGS_TAG) \
+			PKG_KERNEL=$(REGISTRY)/siderolabs/kernel:$(PKGS_TAG) \
 			INSTALLER_ARCH=arm64 PLATFORM=linux/arm64 \
 			IMAGER_ARGS="--overlay-name=rpi5 --overlay-image=$(REGISTRY)/$(REGISTRY_USERNAME)/sbc-raspberrypi5:$(SBCOVERLAY_TAG) --system-extension-image=$(EXTENSIONS)" \
 			kernel initramfs imager installer-base installer && \

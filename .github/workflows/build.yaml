@@ -31,11 +31,8 @@ jobs:
         run: |
           echo "REGISTRY_USERNAME=${{ github.repository_owner }}" >> $GITHUB_ENV
 
-      - name: Prepare (checkouts & patches)
-        run: make checkouts patches
-
-      - name: Kernel
-        run: make kernel
+      - name: Prepare (checkouts)
+        run: make checkouts
 
       - name: Overlay
         run: make overlay
